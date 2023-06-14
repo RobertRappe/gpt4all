@@ -9,7 +9,9 @@ if(APPLE)
     set(CMAKE_OSX_ARCHITECTURES "arm64;x86_64" CACHE STRING "" FORCE)
   else()
     # Build for the host architecture on macOS
-    set(CMAKE_OSX_ARCHITECTURES "${CMAKE_HOST_SYSTEM_PROCESSOR}" CACHE STRING "" FORCE)
+    if(NOT CMAKE_OSX_ARCHITECTURES)
+      set(CMAKE_OSX_ARCHITECTURES "${CMAKE_HOST_SYSTEM_PROCESSOR}" CACHE STRING "" FORCE)
+    endif()
   endif()
 endif()
 
@@ -95,6 +97,10 @@ foreach(BUILD_VARIANT IN LISTS BUILD_VARIANTS)
         LLAMA_VERSIONS=>=3 LLAMA_DATE=999999)
     prepare_target(llamamodel-mainline llama-mainline)
 
+    add_library(replit-mainline-${BUILD_VARIANT} SHARED
+    replit.cpp utils.h utils.cpp llmodel_shared.cpp)
+    prepare_target(replit-mainline llama-mainline)
+
     if (NOT LLAMA_METAL)
         add_library(llamamodel-230519-${BUILD_VARIANT} SHARED
             llamamodel.cpp llmodel_shared.cpp)
@@ -114,10 +120,6 @@ foreach(BUILD_VARIANT IN LISTS BUILD_VARIANTS)
         add_library(mpt-${BUILD_VARIANT} SHARED
             mpt.cpp utils.h utils.cpp llmodel_shared.cpp)
         prepare_target(mpt ggml-230511)
-
-        add_library(replit-${BUILD_VARIANT} SHARED
-            replit.cpp utils.h utils.cpp llmodel_shared.cpp)
-        prepare_target(replit ggml-230511)
     endif()
 endforeach()
 
